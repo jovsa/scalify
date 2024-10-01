@@ -1,5 +1,6 @@
 black
 jax[cuda12_pip]
 numpy
+pytest
 torch
 triton
