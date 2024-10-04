@@ -1,10 +1,8 @@
 # Tracking Flops
 
-Q1: The trace shown below indicates that other than matrix multiplication, all of the other operations are a tiny fraction of the advertised flops. Why?
+Q1: The operations `sqrt`, `sin`, `sigmoid`, `log10`, `pow` take roughly the same time as scalar multiplication. Why?
 
-Q2: Simple operations like addition take exactly as long as complex ones like sine and log. Why?
-
-[code](https://github.com/jovsa/scalify/blob/main/scalify/flops.py)
+[link to code](https://github.com/jovsa/scalify/blob/main/scalify/flops.py)
 
 ```
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
@@ -25,7 +23,21 @@ Self CPU time total: 252.927ms
 Self CUDA time total: 251.008ms
 ```
 
+In pytorch, the main types of [operators](https://dev-discuss.pytorch.org/t/where-do-the-2000-pytorch-operators-come-from-more-than-you-wanted-to-know/373) affected here are composite pointwise/reductions.
 
+Before the GPU can perform numerical operations on data, that data has to first be read into registers.
+
+If peak bandwith of T4 GPU is advertised as `0.32` TB/s, this means a sqaure matrix of size `8192` matrix of `fp32` values takes at least $$(4 * (8192)^2)/(0.32*10**12)) = 0.839 ms $$  ms to read. Hence:
+* `0.839*2`= `1.676` ms (assuming read + write round trip)
+* Therefore, `0.040` TFLOPS/sec ~ `12%`
+
+Q: What is the arithmetic intensity for matrix multiplication and point-wise operations?
+
+Q: When is the GPU memory bound?
+
+Q: How do you explain the advertised FP32 performance (`0.32` TFLOPS/sec)?
+
+Q: How can peak memory bandwidth be achieved?
 
 ---
 ## References
