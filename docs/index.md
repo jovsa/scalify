@@ -1,3 +1,3 @@
 # Index
 
-1. [Counting Flops](/docs/counting_flops.md)
+1. [Tracking Flops](/docs/tracking_flops.md)

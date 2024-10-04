@@ -3,4 +3,5 @@ jax[cuda12_pip]
 numpy
 pytest
 torch
+torch_tb_profiler
 triton
