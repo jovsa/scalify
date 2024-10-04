@@ -1,9 +1,10 @@
 # Tracking Flops
 
-The trace shown below indicates that other than matrix multiplication, all of the other operations are a tiny fraction (~
-) of the advertised flops.
-Furthermore, simple operations like addition take exactly as long as complex ones like sine and log. Why?
+Q1: The trace shown below indicates that other than matrix multiplication, all of the other operations are a tiny fraction of the advertised flops. Why?
 
+Q2: Simple operations like addition take exactly as long as complex ones like sine and log. Why?
+
+[code](https://github.com/jovsa/scalify/blob/main/scalify/flops.py)
 
 ```
 -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
@@ -26,8 +27,9 @@ Self CUDA time total: 251.008ms
 
 
 
+---
+## References
 
-References:
 GPU SPECES:
 ```
 00:00.0 Host bridge: Intel Corporation 440FX - 82441FX PMC [Natoma] (rev 02)
