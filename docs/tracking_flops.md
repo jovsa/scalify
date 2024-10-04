@@ -1,6 +1,6 @@
 # Tracking Flops
 
-Q1: The operations `sqrt`, `sin`, `sigmoid`, `log10`, `pow` take roughly the same time as scalar multiplication. Why?
+### Q: The operations `sqrt`, `sin`, `sigmoid`, `log10`, `pow` take roughly the same time as scalar multiplication. Why?
 
 [link to code](https://github.com/jovsa/scalify/blob/main/scalify/flops.py)
 
@@ -31,18 +31,51 @@ If peak bandwith of T4 GPU is advertised as `0.32` TB/s, this means a sqaure mat
 * `0.839*2`= `1.676` ms (assuming read + write round trip)
 * Therefore, `0.040` TFLOPS/sec ~ `12%`
 
-Q: What is the arithmetic intensity for matrix multiplication and point-wise operations?
+### Q: What is the arithmetic intensity for matrix multiplication and point-wise operations?
 
-Q: When is the GPU memory bound?
+`Arithmetic intensity` = `total flop count`/ `read/write bytes`
 
-Q: How do you explain the advertised FP32 performance (`0.32` TFLOPS/sec)?
+Hence,
+For matrix multiplication of two `n` x `n` matrices, the flop count is  `O(n^3)`,
+when planned carefully the number of bytes read/written are `O(n^2)`
+so the arithmetic intensity is `O(n)`
 
-Q: How can peak memory bandwidth be achieved?
+For point-wise operations, the flop count is
+, where
+ is the number of tensor entries; the bytes read/written is also
+ so the arithmetic intensity is
+.
+
+### Q: When is an A100 (40 GB) memory bandwidth bound?**
+
+An A100 (40 GB) can perform roughly
+ flops in the time it takes to read or write
+ bytes (single precision float). If the arithmetic intensity of a program <
+ on an A100 (40 GB) then it will be bound by memory bandwidth.
+
+### Q: How do you explain the advertised FP32 performance (19.5 TFLOPS/sec) from the A100 microarchitecture?**
+
+The maximum clock speed of an A100 is `1410` MHz. Dividing the advertised flops by the clock speed, we get
+ FLOPS/cycle. Looking at the spec sheet, we see it has `6912` “CUDA Cores” - this number is suspiciously close to `13830/2` = `6915`
+.
+
+A CUDA Core is essentially one single precision floating point unit. Multiplying two n-bit numbers entails adding n-1 partial products. Therefore a MAC (multiply-and-accumulate) operation has very little incremental cost over multiplication. All hardware vendors consider a MAC to be two flops - so `6912` cores can perform ` 13824` FLOPS/cycle. The discrepancy with above is due to rounding.
+
+Even for compute-bound workloads achieving peak flops is hard - every CUDA Core has to perform a MAC every single cycle.
+
+### Q: How can peak memory bandwidth be achieved?
+
+Just like TFLOPS/sec, the memory bandwidth on GPU spec sheets can easily be misunderstood. It corresponds to best case memory layouts i.e., when copies are aligned with cache dimensions. The high memory bandwidth is due to a very wide memory bus (`5120`bits) which is roughly  that of a CPU. It is optimal for reading/writing to/from long contiguous segments of memory.
+
+While reading/writing tensors are an ideal use case some challenges still remain. E.g., consider the case of transposing a 2D matrix - if the matrix is read in column major order then a naive approach to writing the result will be fragmented. The solution is to use clever memory access by [coalescing reads](https://developer.nvidia.com/blog/how-access-global-memory-efficiently-cuda-c-kernels/) and using [shared memory](https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/).
+
 
 ---
 ## References
 
-GPU SPECES:
+`$lspci`
+
+**GPU SPECES USED:**
 ```
 00:00.0 Host bridge: Intel Corporation 440FX - 82441FX PMC [Natoma] (rev 02)
 00:01.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 03)
@@ -55,7 +88,10 @@ GPU SPECES:
 00:08.0 Ethernet controller: Red Hat, Inc. Virtio network device
 00:09.0 Unclassified device [00ff]: Red Hat, Inc. Virtio RNG
 ```
-MEMORY SPECS:
+
+`$nvidia-smi --query-gpu=memory.total --format=csv`
+
+**MEMORY SPECS USED:**
 ```
 memory.total [MiB]
 15360 MiB
