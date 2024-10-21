@@ -1,6 +1,5 @@
----
-title: "Tracking Flops"
----
+
+# Tracking Flops
 
 ### Q: The operations `sqrt`, `sin`, `sigmoid`, `log10`, `pow` take roughly the same time as scalar multiplication. Why?
 
